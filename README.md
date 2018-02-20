@@ -10,3 +10,6 @@ SourceMod plugin for automatically translating chat messages in Team Fortress 2,
 Unpack *extensions*, *data*, and *plugins* to your SourceMod directory.
 
 **Create *api-key.txt* in */tf/addons/sourcemod/config/sm-translate/* with your [Google API key](https://cloud.google.com/docs/authentication/api-keys#creating_an_api_key) inside.**
+
+## Usage
+Use *sm_languagemenu* or *sm_lmenu* to select target and source languages. 
