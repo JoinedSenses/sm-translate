@@ -18,7 +18,7 @@ public Plugin myinfo =
     name = "sm-translate", 
     author = "Larry", 
     description = "Realtime chat translation", 
-    version = "1.0.0", 
+    version = "1.0.1", 
     url = "http://steamcommunity.com/id/pancakelarry" 
 }; 
 
