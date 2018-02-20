@@ -32,7 +32,7 @@ char g_cLanguages[][] = {"Afrikaans", "Albanian", "Amharic", "Arabic", "Armenian
 						"Corsican", "Croatian", "Czech", "Danish", "Dutch",\ 
 						"English", "Esperanto", "Estonian", "Finnish", "French",\
 						"Frisian", "Galician", "Georgian", "German", "Greek",\
-						"Gujarati",	"Haitian Creole", "Hausa", "Hawaiian", "Hebrew",\
+						"Gujarati", "Haitian Creole", "Hausa", "Hawaiian", "Hebrew",\
 						"Hindi", "Hmong", "Hungarian", "Icelandic", "Igbo",\
 						"Indonesian", "Irish", "Italian", "Japanese", "Javanese",\
 						"Kannada", "Kazakh", "Khmer", "Korean", "Kurdish",\
@@ -81,6 +81,9 @@ Menu g_mSourceLanguageMenu = null;
 Handle g_hTargetPrefs;
 Handle g_hSourcePrefs;
 
+int g_iMaxLoadAttempts = 5;
+int g_iLoadAttempts;
+
 
 public void OnPluginStart()
 {	
@@ -114,6 +117,8 @@ public void OnPluginStart()
 	{
 		if(!IsClientInGame(i))
 			continue;
+		
+		g_iLoadAttempts = 0;
 		CreateTimer(1.0, Timer_LoadClientCookies, i, TIMER_REPEAT);
 	}
 }
@@ -139,8 +144,6 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 	return Plugin_Continue;
 }
 
-int g_iMaxg_iLoadAttempts = 5;
-int g_iLoadAttempts;
 public Action Timer_LoadClientCookies(Handle timer, any client)
 {
 	g_iLoadAttempts++;
@@ -186,7 +189,7 @@ public Action Timer_LoadClientCookies(Handle timer, any client)
 		SetClientCookie(client, g_hSourcePrefs, sources);
 		return Plugin_Stop;
 	}
-	if(g_iLoadAttempts >= g_iMaxg_iLoadAttempts)
+	if(g_iLoadAttempts >= g_iMaxLoadAttempts)
 	{
 		return Plugin_Stop;
 	}
