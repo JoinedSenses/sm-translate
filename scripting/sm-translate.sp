@@ -18,7 +18,7 @@ public Plugin myinfo =
     name = "sm-translate", 
     author = "Larry", 
     description = "Realtime chat translation", 
-    version = "1.0.1", 
+    version = "1.0.2", 
     url = "http://steamcommunity.com/id/pancakelarry" 
 }; 
 
@@ -125,6 +125,7 @@ public void OnPluginStart()
 
 public void OnClientConnected(int client)
 {
+	g_iLoadAttempts = 0;
 	CreateTimer(1.0, Timer_LoadClientCookies, client, TIMER_REPEAT);
 }
 
