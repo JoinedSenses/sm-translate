@@ -16,7 +16,7 @@ public Plugin myinfo =
     name = "sm-translate", 
     author = "Larry", 
     description = "Realtime chat translation", 
-    version = "1.0.3", 
+    version = "1.0.4", 
     url = "http://steamcommunity.com/id/pancakelarry" 
 }; 
 
@@ -148,7 +148,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 	{
 		if(strlen(Args) > 0)
 		{
-			TranslateToChat(Args);
+			TranslateToChat(Args, client);
 		}			
 	}
 	return Plugin_Continue;
@@ -367,7 +367,7 @@ void ShowSourceMenu(int client)
 	g_mSourceLanguageMenu.Display(client, MENU_TIME_FOREVER);
 }
 
-public void TranslateToChat(char[] originalMessage)
+public void TranslateToChat(char[] originalMessage, int sender)
 {	
 	// Escape stuff for JSON
 	char message[512];
@@ -395,7 +395,7 @@ public void TranslateToChat(char[] originalMessage)
 			if(strcmp(g_cLanguageCodes[g_iClientTargetLanguage[a]], g_cLanguageCodes[g_iClientTargetLanguage[i]], false) == 0 && i>1)
 				break;
 			System2HTTPRequest httpRequest = new System2HTTPRequest(TranslateCallback, g_cApiUrl); 
-			httpRequest.Any = i;
+			httpRequest.Any = sender;
 			httpRequest.SetHeader("Content-Type", "application/json; charset=utf-8");
 			httpRequest.SetData("{ \
 			'q':'%s', \
@@ -493,9 +493,31 @@ public void TranslateCallback(bool success, const char[] error, System2HTTPReque
 		ReplaceString(buffer, arraySize, "&#39;", "\'", false);
 		ReplaceString(buffer, arraySize, "\\\\", "\\", false);
 		
+		request.GetData(content, arraySize);
+		ReplaceString(content, arraySize, "\'", "\"", false);
+
+		// The whole JSON object
+		new Handle:hObj3 = json_load(content);
+		if(hObj3 == INVALID_HANDLE || !json_is_object(hObj3))
+		{
+			if(hObj3 != INVALID_HANDLE)
+				CloseHandle(hObj3);
+			if(g_bDebugLog)
+				PrintToServer("request: \n%s", content);
+			return ThrowError("Couldn't Parse JSON");
+		}
+		
+		char[] targetLang = new char[5];
+		json_object_get_string(hObj3, "target", targetLang, 5);
+		TrimString(targetLang);
+		CloseHandle(hObj3);
+
 		for(int i = 1; i<=MaxClients; i++)
 		{
 			if(!IsClientInGame(i))
+				continue;
+			
+			if(strcmp(targetLang, g_cLanguageCodes[g_iClientTargetLanguage[i]], false) != 0)
 				continue;
 			
 			// Don't translate from clients target language
