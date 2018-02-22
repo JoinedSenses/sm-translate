@@ -11,14 +11,12 @@
 #include <clientprefs>
 #include <morecolors>
 
-//#define DEBUG
-
 public Plugin myinfo = 
 { 
     name = "sm-translate", 
     author = "Larry", 
     description = "Realtime chat translation", 
-    version = "1.0.2", 
+    version = "1.0.3", 
     url = "http://steamcommunity.com/id/pancakelarry" 
 }; 
 
@@ -84,6 +82,9 @@ Handle g_hSourcePrefs;
 int g_iMaxLoadAttempts = 5;
 int g_iLoadAttempts;
 
+Handle g_hDebugLog;
+bool g_bDebugLog;
+
 
 public void OnPluginStart()
 {	
@@ -106,6 +107,9 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_languagemenu", Command_ShowLanguageMenu, "Opens language settings menu");
 	RegConsoleCmd("sm_lmenu", Command_ShowLanguageMenu, "Opens language settings menu");
 	
+	g_hDebugLog = CreateConVar("translate_debug", "0", "Enables debug logging", _, true, 0.0, true, 1.0);
+	HookConVarChange(g_hDebugLog, ConVar_Debug_Change);
+	
 	g_mLanguageMenu = BuildLanguageMenu();
 	g_mTargetLanguageMenu = BuildTargetLanguageMenu();	
 	g_mSourceLanguageMenu = BuildSourceLanguageMenu();
@@ -121,6 +125,11 @@ public void OnPluginStart()
 		g_iLoadAttempts = 0;
 		CreateTimer(1.0, Timer_LoadClientCookies, i, TIMER_REPEAT);
 	}
+}
+
+public ConVar_Debug_Change(Handle:convar, const String:oldValue[], const String:newValue[])
+{
+ 	g_bDebugLog = GetConVarBool(g_hDebugLog);
 }
 
 public void OnClientConnected(int client)
@@ -417,15 +426,14 @@ public void TranslateCallback(bool success, const char[] error, System2HTTPReque
 		{
 			if(hObj != INVALID_HANDLE)
 				CloseHandle(hObj);
-			#if defined DEBUG
-			PrintToServer("response: \n%s", content);
-			#endif
+			if(g_bDebugLog)
+				PrintToServer("response: \n%s", content);
 			return ThrowError("Couldn't Parse JSON");
 		}
-		#if defined DEBUG
 		char temp[1024];
-		json_dump(hObj, temp, 1024);
-		#endif
+		if(g_bDebugLog)		
+			json_dump(hObj, temp, 1024);
+		
 		
 		// Data object
 		new Handle:hObj2 = json_object_get(hObj, "data");
@@ -433,14 +441,14 @@ public void TranslateCallback(bool success, const char[] error, System2HTTPReque
 		{
 			if(hObj2 != INVALID_HANDLE)
 				CloseHandle(hObj2);
-			#if defined DEBUG
-			PrintToServer("hObj: \n%s", temp);
-			#endif
+			if(g_bDebugLog)
+				PrintToServer("hObj: \n%s", temp);
+				
 			return ThrowError("Couldn't Parse JSON");
 		}
-		#if defined DEBUG
-		json_dump(hObj2, temp, 1024);
-		#endif
+		if(g_bDebugLog)
+			json_dump(hObj2, temp, 1024);
+
 		CloseHandle(hObj);
 		
 		// Translations array
@@ -449,14 +457,14 @@ public void TranslateCallback(bool success, const char[] error, System2HTTPReque
 		{
 			if(hArray != INVALID_HANDLE)
 				CloseHandle(hArray);
-			#if defined DEBUG
-			PrintToServer("hObj2: \n%s", temp);
-			#endif
+			if(g_bDebugLog)
+				PrintToServer("hObj2: \n%s", temp);
+
 			return ThrowError("Couldn't Parse JSON");
 		}
-		#if defined DEBUG
-		json_dump(hArray, temp, 1024);
-		#endif
+		if(g_bDebugLog)
+			json_dump(hArray, temp, 1024);
+
 		CloseHandle(hObj2);
 		
 		// Make translations array into an object
@@ -465,9 +473,9 @@ public void TranslateCallback(bool success, const char[] error, System2HTTPReque
 		{
 			if(hArrayContent != INVALID_HANDLE)
 				CloseHandle(hArrayContent);
-			#if defined DEBUG
-			PrintToServer("hArray: \n%s", temp);
-			#endif
+			if(g_bDebugLog)
+				PrintToServer("hArray: \n%s", temp);
+				
 			return ThrowError("Couldn't Parse JSON");
 		}
 		
@@ -493,12 +501,10 @@ public void TranslateCallback(bool success, const char[] error, System2HTTPReque
 			// Don't translate from clients target language
 			if(strcmp(sourceLangBuffer, g_cLanguageCodes[g_iClientTargetLanguage[i]], false) == 0)
 				continue;
-			
-			#if !defined DEBUG
+				
 			// Don't translate clients own messages
-			if(i == client)
+			if(i == client && !g_bDebugLog)
 				continue;
-			#endif
 			
 			// Check wanted source languages
 			bool brk = false;
