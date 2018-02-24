@@ -168,7 +168,7 @@ public Action Timer_LoadClientCookies(Handle timer, any client)
 			SetClientCookie(client, g_hTargetPrefs, "en");
 			char sources[sizeof(g_cLanguages)];
 			for(int i = 0; i<sizeof(sources); i++)
-				sources[i] = 't';
+				sources[i] = 'f';
 			return Plugin_Stop;
 		}
 		else
@@ -190,7 +190,7 @@ public Action Timer_LoadClientCookies(Handle timer, any client)
 		for(int i = 0; i<sizeof(sources); i++)
 		{
 			if(sources[i] == '\0')
-				g_bClientSourceLanguages[client][i] = true;
+				g_bClientSourceLanguages[client][i] = false;
 			if(sources[i] == 't')
 				g_bClientSourceLanguages[client][i] = true;
 			if(sources[i] == 'f')
