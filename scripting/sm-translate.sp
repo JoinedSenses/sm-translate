@@ -16,7 +16,7 @@ public Plugin myinfo =
     name = "sm-translate", 
     author = "Larry", 
     description = "Realtime chat translation", 
-    version = "1.0.4", 
+    version = "1.0.5", 
     url = "http://steamcommunity.com/id/pancakelarry" 
 }; 
 
@@ -529,17 +529,17 @@ public void TranslateCallback(bool success, const char[] error, System2HTTPReque
 				continue;
 			
 			// Check wanted source languages
-			bool brk = false;
+			bool cont = false;
 			for(int e = 0; e<sizeof(g_cLanguages); e++)
 			{
 				if(!g_bClientSourceLanguages[i][e])
 				{
 					if(strcmp(sourceLangBuffer, g_cLanguageCodes[e], false) == 0)
-						brk = true;
+						cont = true;
 				}				
 			}
-			if(brk)
-				break;
+			if(cont)
+				continue;
 			
 			char name[64];
 			GetClientName(client, name, sizeof(name));
